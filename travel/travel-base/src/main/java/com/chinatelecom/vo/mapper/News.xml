@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--定义所有SQL语句映射,对于本实体而言，相关的所有SQL代码在此定义-->
+<mapper namespace="com.chinatelecom.dao.INewsDAO"> <!--学习到SSM整合时，此命名空间异常重要-->
+
+    <!--<cache eviction="FIFO" readOnly="true" flushInterval="200"/>    &lt;!&ndash;News.xml之中定义的所有查询都默认全部开启二级缓存&ndash;&gt;-->
+
+    <!--编写增加的操作语句，其中id随意定义，只要有意义即可-->
+    <insert id="doCreate" parameterType="News"
+            keyProperty="nid" keyColumn="nid" useGeneratedKeys="true"> <!--此种获得主键内容方式，适合于MySQL -->
+        <!--动态SQL-->
+        INSERT INTO news (title,content) VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="title==null">
+                'NOTitle',
+            </if>
+            <if test="title!=null">
+                #{title},
+            </if>
+            <if test="content==null">
+                'NOContent',
+            </if>
+            <if test="content!=null">
+                #{content},
+            </if>
+        </trim>
+        <!--INSERT INTO news(title,content) VALUES (#{title},#{content});-->
+        <!--此种获得增长ID主键内容对所有数据库通用， -->
+        <!--<selectKey keyColumn="nid" keyProperty="nid" order="AFTER" resultType="java.lang.Long">-->
+        <!--SELECT LAST_INSERT_ID()-->
+        <!--</selectKey>-->
+    </insert>
+
+    <!--更新操作的动态SQL-->
+    <update id="doEdit" parameterType="News">
+        UPDATE news
+        <set>
+            <if test="title!=null and title!=&quot;&quot;">
+                title=#{title},
+            </if>
+            <if test="content!=null and content!=&quot;&quot;">
+                content=#{content},
+            </if>
+        </set>
+        <where>
+            <if test="nid!=null and nid!=0">
+                nid=#{nid}
+            </if>
+        </where>
+    </update>
+
+    <!--在进行数据查询的时候，总有些数据不断重复，可以自定义一个重复引用的标记,使用标签<sql>定义-->
+    <sql id="selectBase">
+        SELECT nid,title,content FROM news
+    </sql>
+    <select id="findByIds" resultType="News" parameterType="java.lang.Long">
+        <include refid="selectBase"/>
+        <where>
+            nid IN
+            <foreach collection="array" open="(" close=")" separator="," item="ele">
+                #{ele}
+            </foreach>
+        </where>
+    </select>
+
+    <delete id="doRemoveByIds" parameterType="java.lang.Long">
+        DELETE FROM news
+        <where>
+            nid IN
+            <foreach collection="array" open="(" close=")" separator="," item="ele">
+                #{ele}
+            </foreach>
+        </where>
+    </delete>
+
+    <delete id="doRemoveById" parameterType="java.lang.Long">
+        DELETE FROM news WHERE nid=#{nid}
+    </delete>
+
+    <select id="findById" parameterType="java.lang.Long" resultType="News">
+        SELECT nid,title,content FROM news WHERE nid=#{nid};
+    </select>
+
+    <select id="findByTitle" parameterType="string" resultType="News">
+        SELECT nid,title,content FROM news WHERE title=#{title};
+    </select>
+
+    <select id="findByIdAndTitle" parameterType="java.util.Map" resultType="News">
+        <include refid="selectBase"/>
+        <where>
+            nid=#{nid} AND title=#{title}
+        </where>
+    </select>
+
+    <select id="findAllTitle" resultType="News">
+        SELECT nid,title FROM news
+    </select>
+
+    <select id="findAllCondition" resultType="News" parameterType="java.util.Map" >
+        SELECT nid,title FROM news
+
+        <!--WHERE-->
+        <!--<choose>-->
+        <!--<when test="nid!=null and title!=null and content!=null">-->
+        <!--nid=#{nid} AND title=#{title} AND content=#{content}-->
+        <!--</when>-->
+        <!--<when test="nid!=null and title!=null and content==null">-->
+        <!--nid=#{nid} AND title=#{title}-->
+        <!--</when>-->
+        <!--<when test="nid!=null and title==null and content!=null">-->
+        <!--nid=#{nid} AND content=#{content}-->
+        <!--</when>-->
+        <!--<otherwise>-->
+        <!--1=1-->
+        <!--</otherwise>-->
+        <!--</choose>-->
+
+
+        <!--加上<where>标签，在此标签内部有内容，则出现WHERE字句，没有内容，则不出现WHERE字句，可以不用<otherwise>标签，-->
+        <where>
+            <choose>
+                <when test="nid!=null and title!=null and content!=null">
+                    nid=#{nid} AND title=#{title} AND content=#{content}
+                </when>
+                <when test="nid!=null and title!=null and content==null">
+                    nid=#{nid} AND title=#{title}
+                </when>
+                <when test="nid!=null and title==null and content!=null">
+                    nid=#{nid} AND content=#{content}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+    <select id="findAll" resultType="News" parameterType="java.util.Map">
+        SELECT nid,title,content FROM news
+        <if test="title!=null and title!=&quot;&quot;">
+            WHERE title=#{title}
+        </if>
+    </select>
+
+    <select id="findSplit" parameterType="java.util.Map" resultType="News">
+        SELECT nid,title,content FROM news
+        <if test="column!=null and keyWord!=null and column!=&quot;&quot; and keyWord!=&quot;&quot;">
+            WHERE ${column} LIKE #{keyWord}
+        </if>
+        LIMIT #{start},#{lineSize}
+    </select>
+
+    <select id="getAllCount" parameterType="java.util.Map" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM news
+        <if test="column!=null and keyWord!=null and column!=&quot;&quot; and keyWord!=&quot;&quot;">
+            WHERE ${column} LIKE #{keyWord}
+        </if>
+    </select>
+
+</mapper>

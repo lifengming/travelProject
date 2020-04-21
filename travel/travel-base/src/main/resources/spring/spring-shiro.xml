@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!-- 此处表示使用内置的表单登录控制验证 -->
+    <!--<bean id="formAuthenticationFilter" class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">-->
+                                        <!--进行验证码检测时，更换掉原始的登录检测类，更换为自己编写的检测类-->
+    <bean id="formAuthenticationFilter" class="com.chinatelecom.kaptcha.CustomerFormAuthenticationFilter">
+        <!-- 定义出需要使用的参数，此参数与表单一一对应 -->
+        <property name="usernameParam" value="eid"/>
+        <property name="passwordParam" value="password"/>
+        <property name="rememberMeParam" value="rememberMe"/>
+        <property name="loginUrl" value="/loginPage.action"/>
+        <property name="failureKeyAttribute" value="error"/>
+    </bean>
+
+    <!-- 定义内置的注销过滤器 -->
+    <bean id="logoutFilter" class="org.apache.shiro.web.filter.authc.LogoutFilter">
+        <!-- 表示注销完成之后直接跳转到指定的路径 -->
+        <property name="redirectUrl" value="/login.jsp"/>
+    </bean>
+
+    <!-- 定义Realm，但是名称一定要注意好,取消自动扫描 -->
+    <bean id="empRealm" class="com.chinatelecom.realm.EmpRealm">
+        <property name="credentialsMatcher">
+            <bean class="com.chinatelecom.realm.cre.CustomerCredentialsMatcher"/>
+        </property>
+    </bean>
+    <!-- 配置SecurityManager的管理 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- 配置你需要使用的Realms -->
+        <property name="realm" ref="empRealm"/>
+        <property name="cacheManager" ref="cacheManager"/>
+        <!--定义要使用的session管理器-->
+        <property name="sessionManager" ref="sessionManager"/>
+        <!--定义RememberMe的管理器-->
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+    </bean>
+
+    <!--session-start-->
+    <!-- 定义Session ID生成管理器,所有sessionID交由shiro管理 -->
+    <bean id="sessionIdGenerator"
+          class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator" />
+
+    <!-- 配置Session DAO的操作处理 -->
+    <bean id="sessionDAO"
+          class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <!-- 设置session缓存的名字，这个名字可以任意 -->
+        <property name="activeSessionsCacheName" value="shiro-activeSessionCache"/>
+        <!-- 定义该Session DAO操作中所使用的ID生成器 -->
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+    </bean>
+
+
+    <!--RemeberMe-start 用户在一小时内免登陆-->
+    <!-- 配置需要向Cookie中保存数据的配置模版（RememberMe） -->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!-- 设置Cookie在浏览器中保存内容的名字，由用户自己来设置 -->
+        <constructor-arg value="CHINATELECOM-RememberMe"/>
+        <!-- 保证该系统不会受到跨域的脚本操作供给 -->
+        <property name="httpOnly" value="true"/>
+        <!-- 定义Cookie的过期时间为一小时 -->
+        <property name="maxAge" value="3600"/>
+    </bean>
+    <!-- 定义RememberMe功能的程序管理类 -->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <!-- 定义在进行RememberMe功能实现的时候所需要使用到的Cookie的处理类 -->
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+    <!--remeberMe-end-->
+
+
+    <!-- 配置需要向Cookie中保存数据的配置模版 -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!-- 在Tomcat运行下默认使用的Cookie的名字为JSESSIONID -->
+        <constructor-arg value="chinatelecom-session-id"/>
+        <!-- 保证该系统不会受到跨域的脚本操作攻击 -->
+        <property name="httpOnly" value="true"/>
+        <!-- 定义Cookie的过期时间，单位为秒，如果设置为-1表示浏览器关闭，则Cookie消失 -->
+        <property name="maxAge" value="-1"/>
+    </bean>
+
+    <!-- 定义会话管理器的操作 -->
+    <bean id="sessionManager"
+          class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <!-- 定义的是全局的session会话超时时间，此操作会覆盖web.xml文件中的超时时间配置 -->
+        <property name="globalSessionTimeout" value="1000000"/>
+        <!-- 删除所有无效的Session对象，此时的session被保存在了内存里面 -->
+        <property name="deleteInvalidSessions" value="true"/>
+        <!-- 定义要使用的无效的Session定时调度器 -->
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <!-- 需要让此session可以使用该定时调度器进行检测 -->
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <!-- 定义Session可以进行序列化的工具类 -->
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <!-- 所有的session一定要将id设置到Cookie之中，需要提供有Cookie的操作模版 -->
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+        <!-- 定义sessionIdCookie模版可以进行操作的启用 -->
+        <property name="sessionIdCookieEnabled" value="true"/>
+    </bean>
+
+    <!-- 配置session的定时验证检测程序类，以让无效的session释放 -->
+    <bean id="sessionValidationScheduler"
+          class="org.apache.shiro.session.mgt.quartz.QuartzSessionValidationScheduler">
+        <!-- 设置session的失效扫描间隔，单位为毫秒 -->
+        <property name="sessionValidationInterval" value="100000"/>
+        <!-- 随后还需要定义有一个会话管理器的程序类的引用 -->
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean>
+
+    <!--session-end-->
+
+
+    <!-- 进行shiro-EHCache缓存的操作配置 -->
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"/>
+    </bean>
+
+
+
+    <!-- 配置shiro过滤器 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- 表示现在要配置的是一个安全管理器 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- 拦截到，跳转到的地址,通过此地址去认证 -->
+        <property name="loginUrl" value="/loginPage.action"/>
+        <!-- 指定没有权限操作时跳转页面 -->
+        <property name="unauthorizedUrl" value="/unauthor.action"/>
+        <!-- 认证成功统一跳转的访问路径 建议不配置，shiro认证成功自动到上一个请求路径 -->
+        <property name="successUrl" value="/pages/back/index.action"/>
+
+        <!--注解权限验证失败不跳转路径问题-->
+        <!--问题原因：由于我们架构是用springmvc框架来搭建的所以项目的路径跳转是由springmvc来控制的，-->
+        <!--也就是说我们在shiro里面的配置没有用-->
+        <!--但是此处为什么successUrl可以成功跳转？后期再慢慢了解吧-->
+
+        <!-- 自定义filter，可用来更改默认的表单名称配置 -->
+        <property name="filters">  <!--将自定义 的FormAuthenticationFilter注入shiroFilter中-->
+            <map>
+                <entry key="authc" value-ref="formAuthenticationFilter"/>
+                <!-- 注销的访问的过滤路径为logout -->
+                <entry key="logout" value-ref="logoutFilter"/>
+            </map>
+        </property>
+        <!-- shiro里面需要针对于所有的路径进行配置，所有的配置需要通过文本的形式设置 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /logout.jsp=logout
+                /loginPage.action=authc
+                /pages/back/**=user
+                /*=anon
+            </value>
+        </property>
+    </bean>
+
+    <!-- 配置Shiro在Spring中的生命周期的控制操作 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+</beans>

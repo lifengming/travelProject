@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+        <!--需要启动SpringCache-->
+    <cache:annotation-driven cache-manager="cacheManager"/>
+    <!--使用ConcurrentMap形式配置缓存组件-->
+    <!--<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">-->
+        <!--<property name="caches">-->
+            <!--&lt;!&ndash;id="news",就是在业务层进行缓存具体操作时使用的名称&ndash;&gt;-->
+            <!--<bean id="news" class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"/>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+    <!--使用EHCache形式配置缓存组件,单机版最强的缓存组件-->
+    <bean id="ehCacheManagerFactoryBean" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>    <!--配置文件-->
+    </bean>
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="ehCacheManagerFactoryBean"/>
+    </bean>
+
+
+    <!--配置Redis分布式缓存组件-->
+    <!--<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">-->
+        <!--<property name="caches">-->
+            <!--<set>-->
+                <!--<bean class="com.chinatelecom.ssm.cache.RedisCache">-->
+                    <!--<property name="name" value="news"/>-->
+                    <!--<property name="redisTemplate" ref="redisTemplate"/>-->
+                <!--</bean>-->
+            <!--</set>-->
+        <!--</property>    -->
+    <!--</bean>-->
+
+</beans>

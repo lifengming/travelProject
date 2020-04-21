@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--不需要的扫描包最好不要配置，防止出现重复扫描！后果很惨!-->
+    <context:component-scan base-package="com.chinatelecom.dao,com.chinatelecom.service,com.chinatelecom.realm"/>
+    <!--使用spring 配置sql连接-->
+    <context:property-placeholder location="classpath:config/*.properties"/>
+    <import resource="spring-datasource.xml"/>
+    <import resource="spring-transaction.xml"/>
+    <import resource="spring-mybatis.xml"/>
+    <!--<import resource="spring-cache.xml"/>-->
+    <import resource="spring-shiro.xml"/>
+    <import resource="spring-task.xml"/>
+    <!--使用Annotation配置AOP-->
+    <aop:aspectj-autoproxy/>
+
+    <!-- 增加shiro的相关配置操作，针对service层权限检测 -->
+    <!--shiro注解授权方式在业务层的开启！ 启动在Shiro里面进行Annotation的相关验证处理操作 -->
+    <bean id="serviceDefaultAdvisorAutoProxyCreator"
+          class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+          depends-on="lifecycleBeanPostProcessor">
+        <!-- 进行目标程序类的代理控制 -->
+        <property name="proxyTargetClass" value="true" />
+    </bean>
+    <!-- 针对于安全管理实现的AOP处理操作 -->
+    <bean id="serviceAuthorizationAttributeSourceAdvisor"
+          class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+    <!--shiro-service end-->
+
+</beans>

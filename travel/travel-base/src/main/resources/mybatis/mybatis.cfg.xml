@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--<settings>-->
+        <!--&lt;!&ndash;,当前程序开启二级缓存&ndash;&gt;-->
+        <!--<setting name="cacheEnabled" value="true"/>-->
+    <!--</settings>-->
+    <typeAliases>  <!--进行类别名的定义处理-->
+        <!--这样做有局限性，如果有一百个类，还是需要配置一百次，显然不可取 -->
+        <!--<typeAlias type="com.chinatelecom.mybatis.vo.News" alias="News"/> -->
+
+        <!--扫描指定包下的类，类名称就是别名！！！实际开发中的做法！！！-->
+        <package name="com.chinatelecom.vo"/>
+    </typeAliases>
+
+    <!--在spring-mybatis.xml文件中，利用spring资源加载机制，所以此处删去映射配置-->
+    <!--<mappers>-->
+        <!--<mapper resource="com/chinatelecom/ssm/vo/mapper/News.xml"/>-->
+    <!--</mappers>-->
+</configuration>

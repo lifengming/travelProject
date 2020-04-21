@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!--缓存的管理名称-->
+<ehcache name="springcache">
+    <!--磁盘上的临时存储路径-->
+    <diskStore path="java.io.tmpdir"/>
+    <!--定义默认的缓存策略-->
+    <defaultCache
+            maxElementsInMemory="2000"
+            eternal="true"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            overflowToDisk="true"/>
+    <!--进行具体的缓存定义，这个名称是项目中采用的名称-->
+    <!--以下是具体缓存配置项目-->
+    <cache name="news"
+           maxElementsInMemory="2000"
+           eternal="false"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="0"
+           overflowToDisk="true">
+    </cache>
+</ehcache>
