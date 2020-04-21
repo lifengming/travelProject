@@ -25,7 +25,7 @@
         <lettuce.version>5.1.7.RELEASE</lettuce.version>
         <spring.version>5.1.7.RELEASE</spring.version>
         <c3p0.version>0.9.5.4</c3p0.version>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.10.3</jackson.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
         <commons-io.version>2.6</commons-io.version>
         <spring-data-redis.version>2.1.9.RELEASE</spring-data-redis.version>
