@@ -34,7 +34,7 @@
         <ehcache.version>2.10.6</ehcache.version>
         <shiro-core.version>1.5.0</shiro-core.version>
         <shiro-web.version>1.5.0</shiro-web.version>
-        <shiro-spring.version>1.5.0</shiro-spring.version>
+        <shiro-spring.version>1.7.0</shiro-spring.version>
         <shiro-ehcache.version>1.5.0</shiro-ehcache.version>
         <shiro-quartz.version>1.5.0</shiro-quartz.version>
         <kaptcha.version>2.3.2</kaptcha.version>
