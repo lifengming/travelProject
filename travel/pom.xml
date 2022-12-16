@@ -23,7 +23,7 @@
         <slf4j.version>1.7.26</slf4j.version>
         <commons-pool2.version>2.6.2</commons-pool2.version>
         <lettuce.version>5.1.7.RELEASE</lettuce.version>
-        <spring.version>5.1.7.RELEASE</spring.version>
+        <spring.version>5.2.20.RELEASE</spring.version>
         <c3p0.version>0.9.5.4</c3p0.version>
         <jackson.version>2.9.9</jackson.version>
         <commons-fileupload.version>1.4</commons-fileupload.version>
